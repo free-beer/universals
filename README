@@ -1,0 +1,69 @@
+Universals
+==========
+Everyone knows that global variables are bad. Sometimes though there are values
+that need to visible to all aspects of your code. Universals is a library that
+provides a class that allows for the aggregation of application or library wide
+data values. The Universe class becomes a centralized location for the storage
+or retrieval of such values. This avoids the need to use global variables or to
+pass such values down through the stack to the places they are actually used
+while avoiding the namespace pollution of global variables.
+
+Installing The Library
+----------------------
+The Universals library is provided as a Ruby gem and thus can be installed with
+a line such as...
+
+   $> gem install universals
+
+Using The Library
+-----------------
+The library contains a single class called Universe. This class acts very much
+like a Hash (with a few restrictions). Universe has mixed in Singleton and so
+there should only ever be one instance of the class that can be accessed using
+code such as the following...
+
+   Universals::Universe.instance
+   
+The value returned from this call can be treated like a Hash in that values can
+be set under keys using the array assignment operator like so...
+
+   Universals::Universe.instance["my_value"] = "Blah-de-blah"
+   
+Note that key names must be a String object. In addition, as the class makes the
+stored values available as properties on the Universe instance (see later for
+more details), the key must conform to many of the rules for method names. It
+can only start with a letter (upper or lower case) or an underscore and the
+remainder of the name must be made up of letters, underscores or numbers. The
+key may end with either '!' or '?'. Names ending with '=' or containing '[' or
+']' are explicitly excluded as they would be confusing. If you try to set a
+value on a Universe instance that does not conform to these rules then you will
+receive an exception for your trouble.
+
+As was mention previously, the Universe class makes values stored within it
+available as properties on the object itself. So, the value set in the previous
+example could be accessed using code such as...
+
+   Universals::Universe.instance.my_value
+
+Likewise, values can be set as if they were properties on the object. So, the
+following are valid assignments...
+
+   Universals::Universe.instance.my_value = 12345
+   Universals::Universe.instance.other_value = "Something else."
+   
+As the Universe class is a singleton, any values assigned into it can be
+retrieved anywhere. Note, that no effort has been made to make the Universe
+class thread safe. It is recommended that you assign all of the values needed
+to the object in a single place and thereafter treat the object as read only
+if you want to use it in multi-threaded code.
+
+Deferred Evaluation
+-------------------
+If you want to defer the evaluation of a value you can, instead of directly
+storing the value under it's key, store a Proc that evaluates to the correct
+value under the key. The next time this key is explicitly fetched from the
+Universe instance the Proc will be called (with no parameters) and the value
+it returns will be set under the key instead. Using this technique you can
+defer the creation of items until they are actually used, allowing them to be
+created at more appropriate points in the code and avoiding the possible
+overhead associated with the values creation.
